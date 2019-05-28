@@ -2,7 +2,7 @@
 title: "first_tidytue"
 author: "Frank"
 date: "28/05/2019"
-output: github_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -22,8 +22,7 @@ wine_ratings <- readRDS("./wine_raw.rds")
 
 # thoughts? ---------------------------------------------------------------
 ```{r build_theme}
-# library(leaflet) 
-# country -- a map with rating size
+
 # description text mining the reviews
 dim(wine_ratings)
 wine_theme <- function(){
@@ -69,6 +68,8 @@ price %>% top_n(10) %>%
   labs(x = "", y = "")
 ```
 
+#  Top 5 countries have the most review numbers, the most expesnsive wine and the highest average wine price. 
+
 ```{r mining1word, message=FALSE, warning=FALSE, fig.height=6 ,fig.width=5}
 library(tidytext)
 top_5 <- price %>% 
@@ -104,6 +105,7 @@ library(quanteda)
 
 textplot_wordcloud(dfm,comparison = T, color = rainbow(5))
 ```
+
 # ngram 2 -----------------------------------------------------------------
 ```{r bigrams, message=FALSE, warning=FALSE, fig.height=6,fig.width=7}
 tokenized <- wine_ratings %>% 
