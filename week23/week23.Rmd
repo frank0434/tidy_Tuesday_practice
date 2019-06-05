@@ -105,3 +105,22 @@ leaf  %>%
    addControl(rr, position = "bottomright")
 ```
 
+```{r the most popular}
+update_coutry %>% 
+  group_by( brand) %>% 
+  count() %>% 
+  arrange(desc(n))
+update_coutry %>% 
+  group_by( variety) %>% 
+  count() %>% 
+  arrange(desc(n))
+update_coutry %>% 
+  group_by( style) %>% 
+  count() %>% 
+  arrange(desc(n))
+update_coutry %>% 
+  group_by( brand, country) %>% 
+  summarise(n = mean(stars, na.rm = T)) %>% 
+  arrange(desc(n))
+```
+
