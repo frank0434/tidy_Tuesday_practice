@@ -1,0 +1,126 @@
+---
+title: "second_tidytue"
+author: "liujian"
+date: "2019/6/5"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r libraries}
+library(tidyverse)
+library(countrycode)
+library(sp)
+library(maps)
+library(maptools)
+library(leaflet)
+ramen_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-06-04/ramen_ratings.csv")
+
+```
+```{r glimpse}
+glimpse(ramen_ratings)
+
+sapply(ramen_ratings, function(x) length(unique(x)))
+
+sapply(ramen_ratings, range, na.rm = T)
+
+unique(ramen_ratings$country)[order(unique(ramen_ratings$country))]
+
+```
+```{r corretion}
+
+update_coutry <- ramen_ratings %>% 
+  mutate(country = recode(country,
+                          "Phlippines" = "Philippines",
+                          "Hong Kong" = "China",
+                          "Taiwan" = "China",
+                          "Holland" = "Netherlands",
+                          "Dubai" = "United Arab Emirates",
+                          "Sarawak" = "Malaysia"))
+
+update_coutry %>% 
+  filter(is.na(country))
+
+unique(update_coutry$country)[order(unique(update_coutry$country))]
+
+
+```
+
+```{r leaflet}
+
+#https://stackoverflow.com/questions/33041266/r-rworldmap-map-issue-and-leaflet-application
+world <- map("world", fill=TRUE, plot=FALSE)
+world_map <- map2SpatialPolygons(world, sub(":.*$", "", world$names))
+world_map <- SpatialPolygonsDataFrame(world_map,
+                                      data.frame(country=names(world_map), 
+                                                 stringsAsFactors=FALSE), 
+                                      FALSE)
+
+cnt <- unique(update_coutry$country)
+
+target <- subset(world_map, country %in% cnt)
+# bins <- c(0, 1000, 1500, 2000, 2200, 2500, 2700, 3000, 3300)
+# pal <- colorBin("viridis", domain = update_coutry$review_number, bins = bins)
+# 
+# leaflet(target) %>% 
+#   addTiles() %>% 
+#   addPolygons(fillColor = ~pal(update_coutry$review_number),
+#               weight = 2,
+#   
+#   color = "white",
+#   dashArray = "3",
+#   fillOpacity = 0.7)
+no_of_reviews <- update_coutry %>% 
+  group_by(country) %>% 
+  summarise(sum_review = sum(review_number, na.rm = T)) %>% 
+  arrange(sum_review)
+
+target@data <- target@data %>% 
+  left_join(no_of_reviews)
+pal <- colorBin("RdYlBu", domain = target$sum_review, bins = 5, reverse = TRUE)
+leaf <- leaflet(target) %>% 
+  addTiles() %>% 
+  addPolygons(fillColor = ~pal(sum_review),
+              weight = 2,
+              color = "white",
+              dashArray = "3",
+              fillOpacity = 0.7) %>% 
+  addLegend(pal = pal, values = ~sum_review, opacity = 0.7, title = NULL,
+  position = "bottomleft")
+
+library(htmlwidgets)
+ library(htmltools)
+
+ rr <- tags$div(
+   HTML('<a> Number of reviews for Ramen rating in 38 countries</a>')
+ ) 
+
+leaf  %>%
+   addTiles() %>%
+   
+   addControl(rr, position = "bottomright")
+```
+
+```{r the most popular}
+update_coutry %>% 
+  group_by( brand) %>% 
+  count() %>% 
+  arrange(desc(n))
+update_coutry %>% 
+  group_by( variety) %>% 
+  count() %>% 
+  arrange(desc(n))
+update_coutry %>% 
+  group_by( style) %>% 
+  count() %>% 
+  arrange(desc(n))
+update_coutry %>% 
+  group_by( brand, country) %>% 
+  summarise(n = mean(stars, na.rm = T)) %>% 
+  arrange(desc(n))
+```
+
