@@ -1,15 +1,22 @@
 ---
-title: "second_tidytue"
+title: "Second_tidytue"
 author: "liujian"
 date: "2019/6/5"
 output: 
   html_document:
     keep_md: true
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
+
+# Introduction 
+
+**[Github](https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-06-04)**
+
+# Packages and browsing
 
 ```{r libraries}
 library(tidyverse)
@@ -31,6 +38,9 @@ sapply(ramen_ratings, range, na.rm = T)
 unique(ramen_ratings$country)[order(unique(ramen_ratings$country))]
 
 ```
+
+# Clean the country name
+
 ```{r corretion}
 
 update_coutry <- ramen_ratings %>% 
@@ -49,6 +59,11 @@ unique(update_coutry$country)[order(unique(update_coutry$country))]
 
 
 ```
+
+
+# An interactive map shows which country has the top number of reviews
+
+**Probably indicates these countries have a large population that are living on instant ramen if there are high numbers of reviews.**
 
 ```{r leaflet}
 
@@ -105,22 +120,30 @@ leaf  %>%
    addControl(rr, position = "bottomright")
 ```
 
+# The treemap to show the family member of the brand 
+
 ```{r the most popular}
-update_coutry %>% 
-  group_by( brand) %>% 
+
+library(treemap)
+
+df_treemap <- update_coutry %>% 
+  select(brand, variety) %>% 
+  group_by(brand) %>%
   count() %>% 
-  arrange(desc(n))
-update_coutry %>% 
-  group_by( variety) %>% 
-  count() %>% 
-  arrange(desc(n))
-update_coutry %>% 
-  group_by( style) %>% 
-  count() %>% 
-  arrange(desc(n))
-update_coutry %>% 
-  group_by( brand, country) %>% 
-  summarise(n = mean(stars, na.rm = T)) %>% 
-  arrange(desc(n))
+  arrange(desc(n)) %>% 
+  filter(n >10)
+treemap(df_treemap, 
+        index = "brand", 
+        vSize = "n",
+        vColor = "n", 
+        type="value", 
+        title = "The total number of product for each brand", 
+        title.legend = "Number of products indication", 
+        palette="Spectral",
+        border.col=c("grey50"),             # Color of borders of groups, of subgroups, of subsubgroups ....
+        border.lwds = "3", 
+        bg.labels=c("transparent")
+   
+)
 ```
 
