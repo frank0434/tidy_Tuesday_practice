@@ -1,0 +1,84 @@
+---
+title: "Third_tidytue"
+author: "liujian"
+date: "`r Sys.time()`"
+output: 
+  html_document:
+    keep_md: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introduction 
+
+**[Github](https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-06-11)**
+
+# Packages and browsing
+
+```{r libraries}
+library(tidyverse)
+library(gganimate)
+library(lubridate)
+meteorites <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-06-11/meteorites.csv")
+
+```
+```{r glimpse}
+glimpse(meteorites)
+
+sapply(meteorites, function(x) length(unique(x)))
+
+sapply(meteorites, range, na.rm = T)
+
+
+
+```
+
+# Clean the country name
+
+```{r eda}
+
+meteorites %>% 
+  group_by(year) %>% 
+  count() %>% 
+  arrange(desc(n))
+max(meteorites$mass, na.rm = T)
+
+library(ggmap)
+us <- map_data("state")
+
+meteorites %>% 
+  mutate()
+  ggplot(aes(lat, long, size = mass)) +
+  geom_point() +
+  labs(title = 'Week: {current_frame}') +
+  transition_manual(year) 
+rr <- USArrests %>% 
+  add_rownames("region") %>% 
+  mutate(region=tolower(region))
+
+ ggplot()+
+   geom_map(data=us, map=us,
+           aes(x=long, y=lat, map_id=region)) +
+   labs(x=NULL, y=NULL)+
+   coord_map()
+
+```
+
+
+# An interactive map shows which country has the top number of reviews
+
+**Probably indicates these countries have a large population that are living on instant ramen if there are high numbers of reviews.**
+
+```{r leaflet}
+
+#https://stackoverflow.com/questions/33041266/r-rworldmap-map-issue-and-leaflet-application
+world <- map("world", fill=TRUE, plot=FALSE)
+world_map <- map2SpatialPolygons(world, sub(":.*$", "", world$names))
+world_map <- SpatialPolygonsDataFrame(world_map,
+                                      data.frame(country=names(world_map), 
+                                                 stringsAsFactors=FALSE), 
+                                      FALSE)
+
